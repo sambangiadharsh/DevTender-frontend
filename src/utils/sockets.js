@@ -13,6 +13,7 @@ export const CreateSocketConnection = () => {
 
   return io(isLocalhost ? DEV_BASE_URL : PROD_BASE_URL, {
     path: isLocalhost ? DEV_SOCKET_PATH : PROD_SOCKET_PATH,
+    transports: ["polling", "websocket"], // ✅ Use both polling and websocket
     withCredentials: true,
   });
 };
