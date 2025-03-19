@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import axios from 'axios'
 import { BASE_URL } from '../utils/constants'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { addConnections } from '../utils/connectionSlice'
 
 const Connections = () => {
@@ -77,6 +78,11 @@ const Connections = () => {
                 ))}
               </div>
             </div>
+           <Link to={"/chat/"+row._id}>
+           <div class="flex justify-center items-center">
+    <button class="px-4 py-2 text-lg bg-blue-500 text-white rounded-md hover:bg-blue-600">Chat</button>
+  </div>
+           </Link>
           </div>
         ))}
       </div>
