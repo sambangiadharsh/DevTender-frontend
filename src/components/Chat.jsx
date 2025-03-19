@@ -23,7 +23,7 @@ const Chat = () => {
       const { data } = await axios.get(`${BASE_URL}/chat/${targetUserId}`, {
         withCredentials: true,
       });
-
+      console.log(data);
       const chatMessages = data?.messages.map((msg) => ({
         senderFirstname: msg?.senderId[0]?.firstName || "Anonymous",
         text: msg?.text,
