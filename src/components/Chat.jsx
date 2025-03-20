@@ -8,49 +8,50 @@ import { IoSendSharp } from "react-icons/io5";
 import { FaSmile } from "react-icons/fa";
 
 const Chat = () => {
-  const { targetUserId } = useParams(); // Get targetUserId from params
+  const { targetUserId } = useParams(); // Get targetUserId from URL params
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const user = useSelector((store) => store.user);
   const userId = user?._id;
-  const userFirstname = user?.firstName;
+  const userFirstname = user?.firstName || "You";
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
 
-  // Fetch initial messages
+  // ✅ Fetch initial messages from backend
   const fetchMessages = async () => {
     try {
       const { data } = await axios.get(`${BASE_URL}/chat/${targetUserId}`, {
         withCredentials: true,
       });
-      console.log(data);
+
       const chatMessages = data?.messages.map((msg) => ({
         senderFirstname: msg?.senderId[0]?.firstName || "Anonymous",
         text: msg?.text,
         time: msg?.createdAt,
-        senderId: msg?.senderId[0]?._id, // Add senderId for comparison
+        senderId: msg?.senderId[0]?._id, // Sender's ID for comparison
       }));
 
       setMessages(chatMessages);
     } catch (err) {
-      console.error("Error fetching messages:", err);
+      console.error("Error fetching messages:", err.message);
     }
   };
 
-  // Fetch messages when targetUserId changes
+  // ✅ Fetch messages when targetUserId changes
   useEffect(() => {
     if (targetUserId) {
       fetchMessages();
     }
   }, [targetUserId]);
 
-  // Initialize WebSocket and handle incoming messages
+  // ✅ Initialize WebSocket and handle incoming messages
   useEffect(() => {
     if (!userId || !targetUserId) return;
 
     socketRef.current = CreateSocketConnection();
     const socket = socketRef.current;
 
+    // Join chat room
     socket.emit("joinChat", { userId, targetUserId });
 
     const handleReceivedMessage = ({ senderFirstname, text, time, senderId }) => {
@@ -60,99 +61,104 @@ const Chat = () => {
       ]);
     };
 
+    // Listen for incoming messages
     socket.on("receivedMessage", handleReceivedMessage);
 
+    // Cleanup on unmount
     return () => {
       socket.off("receivedMessage", handleReceivedMessage);
       socket.disconnect();
     };
   }, [userId, targetUserId]);
 
-  // Auto-scroll to bottom when messages update
+  // ✅ Auto-scroll to bottom when messages update
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Scroll to bottom helper
+  // ✅ Scroll to bottom helper
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
-  // Send message to WebSocket
+  // ✅ Send message to WebSocket
   const sendMessage = () => {
     if (input.trim() !== "") {
+      const tempId = Date.now(); // Unique ID for temporary message
+  
       const userMessage = {
         text: input,
         userId,
         targetUserId,
         senderFirstname: userFirstname,
+        tempId,
       };
-
+  
+      // Emit message to backend
       socketRef.current.emit("sendMessage", userMessage);
-
-      // Add message immediately to avoid delay
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          senderFirstname: userFirstname,
-          text: input,
-          time: new Date(),
-          senderId: userId, // Include senderId to identify sender
-        },
-      ]);
-
-      setInput("");
+  
+      // Add message locally with tempId
+      
+      setInput(""); // Clear input after sending
     }
   };
+  
 
   return (
     <div className="h-screen bg-gradient-to-b from-blue-100 to-blue-200 flex justify-center items-center">
       <div className="w-full max-w-lg bg-white shadow-2xl rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-blue-600 text-white text-lg font-bold py-4 px-6 flex justify-between items-center">
-        <span className="text-2xl font-bold text-black-600 tracking-wide align-middle">Chat</span>
-
+          <span>Chat with User: {targetUserId}</span>
           <span className="text-sm font-normal text-gray-300">Online</span>
         </div>
 
-        {/* Messages */}
+        {/* Messages Section */}
         <div className="h-96 overflow-y-auto p-4 space-y-3 bg-gray-50">
-          {messages.map((msg, index) => {
-            const isSender = msg?.senderId === userId;
+          {messages.length === 0 ? (
+            <p className="text-gray-500 text-center">No messages yet...</p>
+          ) : (
+            messages.map((msg, index) => {
+              const isSender = msg?.senderId === userId;
 
-            return (
-              <div
-                key={index}
-                className={`flex ${
-                  isSender ? "justify-end" : "justify-start"
-                } items-start`}
-              >
-                {!isSender && (
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center mr-2">
-                    {msg.senderFirstname?.charAt(0).toUpperCase()}
-                  </div>
-                )}
+              return (
                 <div
-                  className={`p-3 rounded-2xl text-sm max-w-xs ${
-                    isSender
-                      ? "bg-blue-500 text-white ml-auto"
-                      : "bg-gray-200 text-gray-900"
-                  }`}
+                  key={index}
+                  className={`flex ${
+                    isSender ? "justify-end" : "justify-start"
+                  } items-start`}
                 >
-                  <p className="text-xs text-gray-500 mb-1">
-                    {msg.senderFirstname}{" "}
-                    <span className="ml-2 text-gray-400">
-                      {new Date(msg.time).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </p>
-                  <p>{msg.text}</p>
+                  {/* Sender Icon */}
+                  {!isSender && (
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center mr-2">
+                      {msg.senderFirstname?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {/* Message Bubble */}
+                  <div
+                    className={`p-3 rounded-2xl text-sm max-w-xs ${
+                      isSender
+                        ? "bg-blue-500 text-white ml-auto"
+                        : "bg-gray-200 text-gray-900"
+                    }`}
+                  >
+                    <p className="text-xs text-gray-500 mb-1">
+                      {msg.senderFirstname}{" "}
+                      <span className="ml-2 text-gray-400">
+                        {new Date(msg.time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </p>
+                    <p>{msg.text}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
           <div ref={messagesEndRef}></div>
         </div>
 

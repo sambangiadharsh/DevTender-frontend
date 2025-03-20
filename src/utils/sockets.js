@@ -1,13 +1,13 @@
 import { io } from "socket.io-client";
 
-// ✅ Define separate paths directly
-const DEV_BASE_URL = "http://localhost:7777";
+// ✅ Define separate paths for DEV and PROD
+const DEV_BASE_URL = "http://localhost:7777"; // ✅ Backend at 7777 in dev mode
 const PROD_BASE_URL = "https://tindev.duckdns.org/api";
 
 const DEV_SOCKET_PATH = "/socket.io/";
 const PROD_SOCKET_PATH = "/api/socket.io/";
 
-// ✅ Create socket connection
+// ✅ Create WebSocket connection
 export const CreateSocketConnection = () => {
   const isLocalhost = location.hostname === "localhost";
 
