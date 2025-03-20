@@ -55,6 +55,7 @@ const Chat = () => {
     socket.emit("joinChat", { userId, targetUserId });
 
     const handleReceivedMessage = ({ senderFirstname, text, time, senderId }) => {
+      console.log("second");
       setMessages((prevMessages) => [
         ...prevMessages,
         { senderFirstname, text, time, senderId },
@@ -98,7 +99,7 @@ const Chat = () => {
   
       // Emit message to backend
       socketRef.current.emit("sendMessage", userMessage);
-  
+      console.log("third");
       // Add message locally with tempId
       
       setInput(""); // Clear input after sending
