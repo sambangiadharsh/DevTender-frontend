@@ -39,10 +39,10 @@ const Chat = () => {
 
   // ✅ Fetch messages when targetUserId changes
   useEffect(() => {
-    if (targetUserId) {
+    
       fetchMessages();
-    }
-  }, [targetUserId]);
+    
+  }, []);
 
   // ✅ Initialize WebSocket and handle incoming messages
   useEffect(() => {
