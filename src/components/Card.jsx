@@ -13,7 +13,7 @@ const Card = ({ user }) => {
       await axios.post(`${BASE_URL}/request/send/${status}/${toId}`, {}, { withCredentials: true });
       dispatch(removeFeed(toId));
     } catch (err) {
-      console.error("Error sending request:", err);
+      console.error("Error  sending request:", err);
     }
   };
 
