@@ -1,56 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BASE_URL } from "../utils/constants";
 import axios from "axios";
 
 const Premium = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [isPrimeMember, setIsPrimeMember] = useState(false);
+
+  // Verify if user is already a premium member
+  const verifyPremiumUser = async () => {
+    try {
+      const res = await axios.get(BASE_URL + "/payment/verify", {
+        withCredentials: true,
+      });
+      setIsPrimeMember(res.data.isPremium);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    verifyPremiumUser(); // Run once on component load
+  }, []);
 
   const handleSelectPlan = (plan) => {
     setSelectedPlan(plan);
   };
 
-  const handleBuyNow =async () => {
+  const handleBuyNow = async () => {
     if (selectedPlan) {
-      try{
+      try {
         alert(
           `You have selected the ${selectedPlan} plan. Redirecting to payment...`
         );
-        const order=await axios.post(BASE_URL+"/payment/create",{membershipType:selectedPlan},{withCredentials:true});
-       
-        const {amount,notes,currency,orderId}=order.data.savedPayment;
-        console.log(notes);
-        const {keyId}=order.data;
+        const order = await axios.post(
+          BASE_URL + "/payment/create",
+          { membershipType: selectedPlan },
+          { withCredentials: true }
+        );
+
+        const { amount, notes, currency, orderId } = order.data.savedPayment;
+        const { keyId } = order.data;
+
         const options = {
-          key: keyId, // Replace with your Razorpay key_id
-          amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+          key: keyId, // Your Razorpay key_id
+          amount, // Amount in paise
           currency,
-          name: 'TinDev',
-          description: 'Enjoy your subscription',
-          order_id: orderId, // This is the order_id created in the backend
-      
+          name: "TinDev",
+          description: "Enjoy your subscription",
+          order_id: orderId, // Backend-generated order_id
           prefill: {
-            name: notes.firstName +" "+notes.lastName,
+            name: notes.firstName + " " + notes.lastName,
             email: notes.emailId,
-            contact: '9999999999'
+            contact: "9999999999",
           },
           theme: {
-            color: '#F37254'
+            color: "#F37254",
           },
-        }
-         const rzp = new window.Razorpay(options);
-          rzp.open();
+          handler: verifyPremiumUser,
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (err) {
+        console.log(err);
       }
-      catch(err){
-        console.log(err)
-      }
-    } 
-  
-    else {
+    } else {
       alert("Please choose a plan before proceeding.");
     }
   };
 
-  return (
+  return isPrimeMember ? (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-100 to-blue-200 p-4">
+    <div className="bg-white shadow-lg rounded-2xl p-8 max-w-md text-center border border-green-500">
+      <h2 className="text-2xl font-bold text-green-600 mb-4">🎉 Congratulations!</h2>
+      <p className="text-gray-700 mb-4">
+        You are already a <span className="font-semibold text-green-500">Premium Member</span>. Enjoy unlimited access to exclusive features.
+      </p>
+      <button
+        onClick={() => window.location.href = "/feed"}
+        className="bg-green-500 text-white px-6 py-3 rounded-xl hover:bg-green-600 transition-all"
+      >
+        🚀 Go to Dashboard
+      </button>
+    </div>
+  </div>
+  ) : (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold mb-6 text-center">
         Upgrade to Premium and Enjoy Exclusive Features
