@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { BASE_URL } from "../utils/constants";
 import axios from "axios";
+import { useSelector,useDispatch } from "react-redux";
+import { updateUser } from "../utils/userSlice";
 
 const Premium = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isPrimeMember, setIsPrimeMember] = useState(false);
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   // Verify if user is already a premium member
   const verifyPremiumUser = async () => {
@@ -13,6 +17,7 @@ const Premium = () => {
         withCredentials: true,
       });
       setIsPrimeMember(res.data.isPremium);
+      dispatch(updateUser(res.data.User));
     } catch (err) {
       console.log(err);
     }
