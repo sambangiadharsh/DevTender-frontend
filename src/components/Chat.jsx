@@ -14,8 +14,26 @@ const Chat = () => {
   const user = useSelector((store) => store.user);
   const userId = user?._id;
   const userFirstname = user?.firstName || "You";
+  const isPremium = user?.isPremium || false;
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
+  //Access only for premium members
+  if (!isPremium) {
+    return (
+      <div className="h-screen flex justify-center items-center bg-gray-100">
+        <div className="text-center bg-white p-6 rounded-lg shadow-xl">
+          <h2 className="text-2xl font-bold text-red-500">Access Denied</h2>
+          <p className="mt-2 text-gray-600">This feature is available for premium members only.</p>
+          <button
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            onClick={() => window.location.href = "/payment"}
+          >
+            Upgrade to Premium
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ✅ Fetch initial messages from backend
   const fetchMessages = async () => {
@@ -112,7 +130,7 @@ const Chat = () => {
       <div className="w-full max-w-lg bg-white shadow-2xl rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-blue-600 text-white text-lg font-bold py-4 px-6 flex justify-between items-center">
-          <span>Chat with User: {targetUserId}</span>
+          <span>Chat</span>
           <span className="text-sm font-normal text-gray-300">Online</span>
         </div>
 
