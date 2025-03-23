@@ -17,7 +17,7 @@ const Premium = () => {
         withCredentials: true,
       });
       setIsPrimeMember(res.data.isPremium);
-      dispatch(updateUser(res.data.User));
+      dispatch(updateUser(res.data.user));
     } catch (err) {
       console.log(err);
     }
