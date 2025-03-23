@@ -9,7 +9,7 @@ import { appStore } from './utils/appStore'
 import Feed from './components/Feed'
 import Profile from './components/Profile'
 import Chat from './components/Chat'
-
+import Payment from "./components/Payment"
 import Connections from './components/Connections'
 import Requests from './components/Requests'
 function App() {
@@ -30,7 +30,10 @@ function App() {
             <Route path="/profile" element={<Profile/>}/>
             <Route path="/connections" element={<Connections/>}/>
             <Route path="/requests" element={<Requests/>}/>
-            <Route path="/chat/:targetUserId" element={<Chat/>}/>      
+            <Route path="/chat/:targetUserId" element={<Chat/>}/>    
+            <Route path="/payment" element={<Payment/>}/>    
+          
+          
           </Route>
      </Routes>
      </BrowserRouter>
